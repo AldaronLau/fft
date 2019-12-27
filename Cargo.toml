@@ -12,3 +12,6 @@ chfft = "0.3"
 num-complex = "0.2"
 adi = { version = "0.12", default-features = false, features = ["speaker"] }
 twang = {path = "../twang"}
+
+[dev-dependencies]
+opus-no = {path = "../../libcala/opus-no"}

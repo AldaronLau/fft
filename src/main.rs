@@ -73,7 +73,7 @@ fn main() {
         }
 
         if hz >= end_hz {
-            if start && max > 1.0 {
+            if start /*&& max > 1.0*/ {
                 // println!("{}: {}", current_hz, max);
                 output.push((current_hz, max));
             }
@@ -83,5 +83,5 @@ fn main() {
         }
     }
 
-    println!("{:?}", output);
+    println!("{:?}", &output[..100]);
 }
