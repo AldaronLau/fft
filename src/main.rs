@@ -26,50 +26,62 @@ fn main() {
     let mut file = std::fs::File::open("Bb1-f-48kF64.raw").unwrap();
     file.read_to_end(&mut input).unwrap();
     let mut audio = vec![];
+    let mut raw_audio = vec![];
     for i in (0..input.len()).step_by(8) {
+        let raw_sample = f64::from_le_bytes(input[i..i+8].try_into().unwrap());
+        raw_audio.push(raw_sample);
+
         // Hann Window
         let mult = (std::f64::consts::PI * ((i/8) as f64) / (NUM_SAMPLES as f64)).sin();
-        let out = mult * mult * f64::from_le_bytes(input[i..i+8].try_into().unwrap());
+        let out = mult * mult * raw_sample;
 
         audio.push(Complex::new(out, 0.0));
     }
 
+    let (pitch, vol) = pitch::detect(&raw_audio[..NUM_SAMPLES]);
+    // println!("{}; {}", pitch, vol);
+
     let mut fft = CFft1D::<f64>::with_len(NUM_SAMPLES);
     let output = fft.forward(&audio[..NUM_SAMPLES]);
 
-//    println!("the transform of {:?} is {:?}", audio, output);
-
     let fs_div_n = SAMPLE_FREQUENCY as f64 / NUM_SAMPLES as f64;
 
+    let mut list = vec![];
+
     for i in 0..=NUM_SAMPLES / 2 {
-        println!("{}: {}", i as f64 * fs_div_n, (output[i].re * output[i].re + output[i].im * output[i].im).sqrt());
+        let val = (i as f64 * fs_div_n, (output[i].re * output[i].re + output[i].im * output[i].im).sqrt());
+
+        list.push(val);
+
+        // println!("{}: {}", val.0, val.1);
     }
 
-    //
-//    let (pitch, volume) = pitch::detect(&audio);
+    // println!("=====");
 
-/*    println!("Fundamental: {}/{}, expect 58.27=Bb1", pitch, volume);
+    // Find start location.
+//    let mut start_hz = pitch / 2.0;
+    let mut end_hz = pitch / 2.0;
+    let mut start = false;
+    let mut max = 0.0;
+    let mut current_hz = 0.0;
+    let mut output = vec![];
 
-    for sample in audio {
-        
-    }*/
-
-/*    let mut bucket = vec![0.0; BANDWIDTH];
-    let mut count = vec![0usize; BANDWIDTH];
-    let mut i = 0;
-
-    for sample in audio {
-        for j in 0..BANDWIDTH {
-            if i % (j + 1) == 0 {
-                bucket[j] += sample.abs();
-                count[j] += 1;
-            }
+    for (hz, amp) in list {
+        if amp >= max {
+            current_hz = hz;
+            max = amp;
         }
-        i += 1;
+
+        if hz >= end_hz {
+            if start && max > 1.0 {
+                // println!("{}: {}", current_hz, max);
+                output.push((current_hz, max));
+            }
+            start = true;
+            end_hz += pitch;
+            max = 0.0;
+        }
     }
 
-    for i in 0..BANDWIDTH {
-        bucket[i] /= (count[i] as f64 / 100.0);
-        println!("{}: {}", i + 1, bucket[i]);
-    }*/
+    println!("{:?}", output);
 }

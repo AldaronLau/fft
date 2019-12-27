@@ -10,3 +10,5 @@ edition = "2018"
 pitch = { path = "../pitch" }
 chfft = "0.3"
 num-complex = "0.2"
+adi = { version = "0.12", default-features = false, features = ["speaker"] }
+twang = {path = "../twang"}
