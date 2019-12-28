@@ -21,7 +21,7 @@ fn main() {
 
     opus_file.extend(opus_stream.head());
 
-    for _ in 0..48_000*10 {
+    for _ in 0..48_000*60 {
         let sample: i16 = (gen.next().unwrap().ovr(&trombone)).into();
 
         let [a, b] = sample.to_le_bytes();
