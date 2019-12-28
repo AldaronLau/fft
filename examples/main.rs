@@ -1,26 +1,17 @@
-extern crate twang; // for sound generation / effects
-// extern crate adi; // for speaker
-
 use std::io::Write;
 
-// use adi::speaker::Speaker;
+// for sound generation / effects
 use twang::{Sound, prelude::*};
 
+// for Opus stream/file output
 use opus_no::StreamEncoder;
 
 fn main() {
-	// let mut speaker = Speaker::new(0, false).unwrap();
 	let trombone = include!("spectral.rs");
 
     println!("{}", trombone.len());
 
-	let mut gen = Sound::new(None, 1.0); // A3
-
-/*	loop {
-		speaker.update(&mut || {
-			(gen.next().unwrap().ovr(&trombone)).into()
-		});
-	}*/
+	let mut gen = Sound::new(None, 1.0); // FIXME: Pass in Hz rather than multiplier
 
     let mut opus_stream = StreamEncoder::new();
     let mut opus_file = vec![];
@@ -28,12 +19,9 @@ fn main() {
 
     let mut buffer = vec![];
 
-//    while let Some((head, body)) = opus_stream.page() {
     opus_file.extend(opus_stream.head());
-//        opus_file.extend(body);
-//    }
 
-    for _ in 0..48_000 {
+    for _ in 0..48_000*10 {
         let sample: i16 = (gen.next().unwrap().ovr(&trombone)).into();
 
         let [a, b] = sample.to_le_bytes();
@@ -43,6 +31,7 @@ fn main() {
         audio_buffer.push(sample);
         audio_buffer.push(sample);
 
+        // FIXME: Change opus-no to allow other numbers of samples for end of file.
         if audio_buffer.len() >= 1920 * 2 {
             let mut buff = [0; 1920 * 2];
             for i in 0..1920 * 2 {
