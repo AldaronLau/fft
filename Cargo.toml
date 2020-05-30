@@ -15,4 +15,4 @@ twang = {path = "../twang"}
 
 [dev-dependencies]
 opus-no = {path = "../../libcala/opus-no"}
-cala-web = {path = "../../libcala/cala-web"}
+# cala_web = "0.0"

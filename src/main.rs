@@ -1,9 +1,9 @@
-use pitch;
-use num_complex::Complex;
 use chfft::CFft1D;
+use num_complex::Complex;
+use pitch;
 
-use std::io::Read;
 use std::convert::TryInto;
+use std::io::Read;
 
 // 48 kHz (fs)
 const SAMPLE_FREQUENCY: usize = 48_000;
@@ -23,16 +23,16 @@ const FREQUENCY_SPACING: f64 = SAMPLE_FREQUENCY as f64 / NUM_SAMPLES as f64;
 fn main() {
     // Load the audio from a file.
     let mut input = vec![];
-    let mut file = std::fs::File::open("Bb1-f-48kF64.raw").unwrap();
+    let mut file = std::fs::File::open("Bb1-48kF64.raw").unwrap();
     file.read_to_end(&mut input).unwrap();
     let mut audio = vec![];
     let mut raw_audio = vec![];
     for i in (0..input.len()).step_by(8) {
-        let raw_sample = f64::from_le_bytes(input[i..i+8].try_into().unwrap());
+        let raw_sample = f64::from_le_bytes(input[i..i + 8].try_into().unwrap());
         raw_audio.push(raw_sample);
 
         // Hann Window
-        let mult = (std::f64::consts::PI * ((i/8) as f64) / (NUM_SAMPLES as f64)).sin();
+        let mult = (std::f64::consts::PI * ((i / 8) as f64) / (NUM_SAMPLES as f64)).sin();
         let out = mult * mult * raw_sample;
 
         audio.push(Complex::new(out, 0.0));
@@ -49,7 +49,10 @@ fn main() {
     let mut list = vec![];
 
     for i in 0..=NUM_SAMPLES / 2 {
-        let val = (i as f64 * fs_div_n, (output[i].re * output[i].re + output[i].im * output[i].im).sqrt());
+        let val = (
+            i as f64 * fs_div_n,
+            (output[i].re * output[i].re + output[i].im * output[i].im).sqrt(),
+        );
 
         list.push(val);
 
@@ -59,7 +62,7 @@ fn main() {
     // println!("=====");
 
     // Find start location.
-//    let mut start_hz = pitch / 2.0;
+    //    let mut start_hz = pitch / 2.0;
     let mut end_hz = pitch / 2.0;
     let mut start = false;
     let mut max = 0.0;
@@ -73,7 +76,9 @@ fn main() {
         }
 
         if hz >= end_hz {
-            if start /*&& max > 1.0*/ {
+            if start
+            /*&& max > 1.0*/
+            {
                 // println!("{}: {}", current_hz, max);
                 output.push((current_hz, max));
             }
@@ -83,5 +88,5 @@ fn main() {
         }
     }
 
-    println!("{:?}", &output[..100]);
+    println!("{:?}", &output[..256.min(output.len())]);
 }

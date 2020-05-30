@@ -1,7 +1,7 @@
 use std::io::Write;
 
 // for sound generation / effects
-use twang::{Sound, prelude::*};
+use twang::{prelude::*, Sound};
 
 // for Opus stream/file output
 use opus_no::StreamEncoder;
@@ -16,11 +16,11 @@ fn request(stream: cala_web::Stream) -> Box<dyn Future<Output = ()> + Send> {
     Box::new(async {
         let mut stream = stream;
 
-	    let trombone = include!("spectral.rs");
+        let trombone = include!("spectral.rs");
 
         println!("{}", trombone.len());
 
-	    let mut gen = Sound::new(None, 1.0); // FIXME: Pass in Hz rather than multiplier
+        let mut gen = Sound::new(None, 1.0); // FIXME: Pass in Hz rather than multiplier
 
         let mut opus_stream = StreamEncoder::new();
         let mut opus_file = vec![];
@@ -31,7 +31,7 @@ fn request(stream: cala_web::Stream) -> Box<dyn Future<Output = ()> + Send> {
         opus_file.extend(opus_stream.head());
 
         for second in 0..10 {
-            for _ in 0..48_000*6 {
+            for _ in 0..48_000 * 6 {
                 let sample: i16 = (gen.next().unwrap().ovr(&trombone)).into();
 
                 let [a, b] = sample.to_le_bytes();
